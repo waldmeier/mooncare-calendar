@@ -1,0 +1,37 @@
+version: "3.8"
+
+services:
+  mooncare-db:
+    image: postgres:16-alpine
+    container_name: mooncare-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mooncare
+      POSTGRES_USER: mooncare
+      POSTGRES_PASSWORD: mooncare_secret
+    volumes:
+      - mooncare_db:/var/lib/postgresql/data
+    networks:
+      - mooncare-net
+
+  mooncare-app:
+    build: .
+    container_name: mooncare-app
+    restart: unless-stopped
+    depends_on:
+      - mooncare-db
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://mooncare:mooncare_secret@mooncare-db:5432/mooncare
+      NEXT_PUBLIC_BASE_URL: https://mondkalender.wldmr.ch
+    ports:
+      - "3005:3000"
+    networks:
+      - mooncare-net
+
+volumes:
+  mooncare_db:
+
+networks:
+  mooncare-net:
+    driver: bridge
