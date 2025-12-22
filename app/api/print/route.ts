@@ -63,10 +63,10 @@ const pdf = await page.pdf({
 
 const filename = `SKEMA_Haar-Nagel-Pflanzenpflege_${year}.pdf`;
 
-// Buffer -> Uint8Array (TS/Response BodyInit kompatibel)
-const body = pdf instanceof Uint8Array ? pdf : new Uint8Array(pdf);
+// TS-sicher: Response Body = Blob
+const blob = new Blob([pdf], { type: "application/pdf" });
 
-return new Response(body, {
+return new Response(blob, {
   status: 200,
   headers: {
     "Content-Type": "application/pdf",
