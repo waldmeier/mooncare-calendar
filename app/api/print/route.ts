@@ -1,79 +1,74 @@
 // app/api/print/route.ts
-import { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
-// Wichtig: Node runtime (Playwright geht nicht im Edge runtime)
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function getBaseUrl(req: NextRequest) {
-  // 1) explizit gesetzt (empfohlen)
-  const env =
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    process.env.BASE_URL ||
-    process.env.VERCEL_URL;
-
-  if (env) {
-    // VERCEL_URL kommt ohne https://
-    if (env.startsWith("http://") || env.startsWith("https://")) return env;
-    return `https://${env}`;
-  }
-
-  // 2) Fallback aus Request (lokal super)
-  const proto = req.headers.get("x-forwarded-proto") ?? "http";
-  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
-  return `${proto}://${host}`;
+function toInt(v: string | null, fallback: number) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
 }
 
-export async function GET(req: NextRequest) {
-  const url = new URL(req.url);
+function clampYear(y: number) {
+  // optional: begrenzen, damit niemand 1900/9999 anfragt
+  if (y < 2000) return 2000;
+  if (y > 2100) return 2100;
+  return y;
+}
 
-  // Optional: year weiterreichen
-  const year = url.searchParams.get("year") ?? "2026";
+/**
+ * GET /api/print?year=2026
+ * -> erstellt ein A4-PDF via Playwright (Chromium) aus /print?year=2026&autoprint=1
+ */
+export async function GET(req: Request) {
+  const { searchParams, origin } = new URL(req.url);
 
-  // Optional: als Download statt inline
-  const download = url.searchParams.get("download") === "1";
+  const year = clampYear(toInt(searchParams.get("year"), 2026));
 
-  const baseUrl = getBaseUrl(req);
-  const target = `${baseUrl}/print?autoprint=1&year=${encodeURIComponent(year)}`;
+  // Page die gerendert wird (deine Print-Seite)
+  const target = `${origin}/print?year=${year}&autoprint=1`;
 
-  // Dynamischer Import, damit nur im Node runtime geladen wird
+  // Dynamischer Import (nur Node runtime)
   const { chromium } = await import("playwright");
 
   const browser = await chromium.launch({
-    // in Docker/Serverless oft nötig
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
   try {
     const page = await browser.newPage();
 
-    // Wichtig: Media "print", damit print.css/@page korrekt greift
+    // Wichtig: Media "print", damit @page / print.css korrekt greift
     await page.emulateMedia({ media: "print" });
 
     await page.goto(target, { waitUntil: "networkidle" });
 
-    // Falls du Fonts/Images nachlädst, kurz warten (optional)
-    // await page.waitForTimeout(150);
+    const pdf = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      preferCSSPageSize: true,
+    });
 
-const pdf = await page.pdf({
-  format: "A4",
-  printBackground: true,
-  preferCSSPageSize: true,
-});
+    const filename = `SKEMA_Haar-Nagel-Pflanzenpflege_${year}.pdf`;
 
-const filename = `SKEMA_Haar-Nagel-Pflanzenpflege_${year}.pdf`;
+    // ✅ TS-sicher: Buffer/Uint8Array -> echtes ArrayBuffer
+    const u8 = pdf instanceof Uint8Array ? pdf : new Uint8Array(pdf as any);
+    const ab = new ArrayBuffer(u8.byteLength);
+    new Uint8Array(ab).set(u8);
 
-// TS-sicher: Response Body = Blob
-const blob = new Blob([pdf], { type: "application/pdf" });
-
-return new Response(blob, {
-  status: 200,
-  headers: {
-    "Content-Type": "application/pdf",
-    "Content-Disposition": `inline; filename="${filename}"`,
-    "Cache-Control": "no-store",
-  },
-});
+    return new Response(ab, {
+      status: 200,
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `inline; filename="${filename}"`,
+        "Cache-Control": "no-store",
+      },
+    });
+  } catch (e: any) {
+    return NextResponse.json(
+      { ok: false, error: e?.message ?? String(e) },
+      { status: 500 }
+    );
   } finally {
     await browser.close();
   }
