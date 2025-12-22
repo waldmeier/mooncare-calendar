@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   color-scheme: light;
@@ -24,6 +26,7 @@ body {
   outline: 2px solid rgba(212, 166, 31, 0.55);
   outline-offset: 2px;
 }
+
 /* ---------- A4 PRINT LAYOUT (Portrait) ---------- */
 @page {
   size: A4 portrait;
