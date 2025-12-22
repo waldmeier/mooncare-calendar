@@ -1,6 +1,7 @@
 // app/api/import/astroseek/route.ts
 import { NextResponse } from "next/server";
 import * as cheerio from "cheerio";
+import type { AnyNode } from "domhandler";
 import { prisma } from "@/lib/db";
 import { effectiveHnw, type MoonPhase, type Zodiac } from "@/lib/rules";
 
@@ -81,7 +82,7 @@ function mapPhaseDE(textRaw: string): MoonPhase {
 
 /**
  * Vollständige Zeichen-Erkennung (alle 12), damit die Erkennung stabil ist.
- * Danach reduzieren wir bewusst auf deine 5 Zeichen.
+ * Danach reduzieren wir bewusst auf deine 6 Zeichen (inkl. Steinbock).
  */
 function detectZodiacDE(textRaw: string): string {
   const t = normalizeDE(textRaw);
@@ -103,7 +104,7 @@ function detectZodiacDE(textRaw: string): string {
 }
 
 /**
- * Nur deine 5 Zeichen bleiben – der Rest wird OTHER (damit deine Tabelle sauber ist).
+ * Nur deine Zeichen bleiben – der Rest wird OTHER (damit deine Tabelle sauber ist).
  */
 function reduceZodiacToYourSet(detected: string): Zodiac {
   switch (detected) {
@@ -170,13 +171,15 @@ async function fetchMonthPage(year: number, monthIndex0: number) {
  */
 function pickBestTable($: cheerio.CheerioAPI, monthIndex0: number) {
   const tables = $("table").toArray();
-  let best: { el: cheerio.Element | null; score: number } = { el: null, score: 0 };
+
+  // ✅ AnyNode statt Element – das passt zu Cheerio/Domhandler wirklich stabil
+  let best: { el: AnyNode | null; score: number } = { el: null, score: 0 };
 
   for (const t of tables) {
-    const rows = $(t)
+    const rows = $(t as any)
       .find("tr")
       .toArray()
-      .map((r) => $(r).text().replace(/\s+/g, " ").trim())
+      .map((r) => $(r as any).text().replace(/\s+/g, " ").trim())
       .filter(Boolean);
 
     let score = 0;
@@ -184,10 +187,10 @@ function pickBestTable($: cheerio.CheerioAPI, monthIndex0: number) {
       if (extractDayFromRow(rowText, monthIndex0)) score++;
     }
 
-    if (score > best.score) best = { el: t, score };
+    if (score > best.score) best = { el: t as AnyNode, score };
   }
 
-  return best.el ? $(best.el) : null;
+  return best.el ? $(best.el as any) : null;
 }
 
 /**
@@ -222,7 +225,7 @@ export async function GET(req: Request) {
     fetchedPages: 0,
     fetchErrors: [] as Array<{ month: number; url: string; status?: number; error: string }>,
     parsedDaysTotal: 0,
-    zodiacRecognized: 0, // zählt NUR deine 5 (nach reduce)
+    zodiacRecognized: 0, // zählt NUR deine (nach reduce)
     phaseRecognized: 0,
     upserted: 0,
     samples: {
@@ -267,7 +270,7 @@ export async function GET(req: Request) {
       const rows = table
         .find("tr")
         .toArray()
-        .map((r) => $(r).text().replace(/\s+/g, " ").trim())
+        .map((r) => $(r as any).text().replace(/\s+/g, " ").trim())
         .filter(Boolean);
 
       for (const rowText of rows) {
@@ -276,7 +279,6 @@ export async function GET(req: Request) {
 
         const iso = isoDateUTC(year, m, day);
 
-        // ✅ Korrekt: immer aus rowText ziehen (kein "parsed"!)
         const detectedZ = detectZodiacDE(rowText);
         const zodiac = reduceZodiacToYourSet(detectedZ);
         const phase = mapPhaseDE(rowText);
@@ -294,7 +296,7 @@ export async function GET(req: Request) {
 
     if (out.fetchedPages === 0) out.ok = false;
 
-    // Samples: NUR “interessante” (deine 5 oder Phase != OTHER)
+    // Samples: NUR “interessante” (deine Zeichen oder Phase != OTHER)
     for (const [iso, e] of byISO.entries()) {
       if (out.samples.good.length >= 8) break;
       if (e.zodiac !== "OTHER" || e.phase !== "OTHER") {
