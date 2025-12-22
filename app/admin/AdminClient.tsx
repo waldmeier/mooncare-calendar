@@ -25,8 +25,18 @@ type DayEntry = {
 };
 
 const MONTHS_DE = [
-  "Januar","Februar","März","April","Mai","Juni",
-  "Juli","August","September","Oktober","November","Dezember",
+  "Januar",
+  "Februar",
+  "März",
+  "April",
+  "Mai",
+  "Juni",
+  "Juli",
+  "August",
+  "September",
+  "Oktober",
+  "November",
+  "Dezember",
 ];
 
 const DOW_DE = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
@@ -55,13 +65,20 @@ function toPhase(value: string): MoonPhase {
 
 function shortZodiacLabel(z: Zodiac) {
   switch (z) {
-    case "LOEWE": return "Löwe";
-    case "JUNGFRAU": return "Jungfrau";
-    case "FISCHE": return "Fische";
-    case "KREBS": return "Krebs";
-    case "SKORPION": return "Skorpion";
-    case "STEINBOCK": return "Steinbock";
-    default: return "";
+    case "LOEWE":
+      return "Löwe";
+    case "JUNGFRAU":
+      return "Jungfrau";
+    case "FISCHE":
+      return "Fische";
+    case "KREBS":
+      return "Krebs";
+    case "SKORPION":
+      return "Skorpion";
+    case "STEINBOCK":
+      return "Steinbock";
+    default:
+      return "";
   }
 }
 
@@ -80,19 +97,13 @@ function MoonMark({ phase, size = 16 }: { phase: MoonPhase; size?: number }) {
 
   if (v === "full") {
     return (
-      <span
-        style={{ width: s, height: s, backgroundColor: yellow }}
-        className={`inline-block rounded-full border ${border}`}
-      />
+      <span style={{ width: s, height: s, backgroundColor: yellow }} className={`inline-block rounded-full border ${border}`} />
     );
   }
 
   if (v === "waxing") {
     return (
-      <span
-        style={{ width: s, height: s }}
-        className={`relative inline-block overflow-hidden rounded-full border ${border} bg-black`}
-      >
+      <span style={{ width: s, height: s }} className={`relative inline-block overflow-hidden rounded-full border ${border} bg-black`}>
         <span style={{ backgroundColor: yellow }} className="absolute right-0 top-0 h-full w-1/2" />
       </span>
     );
@@ -100,10 +111,7 @@ function MoonMark({ phase, size = 16 }: { phase: MoonPhase; size?: number }) {
 
   // waning
   return (
-    <span
-      style={{ width: s, height: s, backgroundColor: yellow }}
-      className={`relative inline-block overflow-hidden rounded-full border ${border}`}
-    >
+    <span style={{ width: s, height: s, backgroundColor: yellow }} className={`relative inline-block overflow-hidden rounded-full border ${border}`}>
       <span className="absolute right-0 top-0 h-full w-1/2 bg-black" />
     </span>
   );
@@ -212,9 +220,7 @@ export default function AdminMonthlyGrid() {
   async function runAstroSeekImport() {
     setImporting(true);
     try {
-      const url = importDryRun
-        ? `/api/import/astroseek?year=${year}&dryRun=1`
-        : `/api/import/astroseek?year=${year}`;
+      const url = importDryRun ? `/api/import/astroseek?year=${year}&dryRun=1` : `/api/import/astroseek?year=${year}`;
 
       const res = await fetch(url, { cache: "no-store" });
       const json = await res.json();
@@ -263,11 +269,7 @@ export default function AdminMonthlyGrid() {
               </button>
 
               <label className="inline-flex items-center gap-2 rounded-lg border bg-white px-3 py-2 text-sm shadow-sm">
-                <input
-                  type="checkbox"
-                  checked={importDryRun}
-                  onChange={(e) => setImportDryRun(e.target.checked)}
-                />
+                <input type="checkbox" checked={importDryRun} onChange={(e) => setImportDryRun(e.target.checked)} />
                 DryRun
               </label>
 
@@ -291,13 +293,11 @@ export default function AdminMonthlyGrid() {
           </div>
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <select
-              className="rounded-lg border bg-white px-3 py-2 text-sm shadow-sm"
-              value={year}
-              onChange={(e) => setYear(Number(e.target.value))}
-            >
+            <select className="rounded-lg border bg-white px-3 py-2 text-sm shadow-sm" value={year} onChange={(e) => setYear(Number(e.target.value))}>
               {[2025, 2026, 2027].map((y) => (
-                <option key={y} value={y}>{y}</option>
+                <option key={y} value={y}>
+                  {y}
+                </option>
               ))}
             </select>
 
@@ -333,15 +333,15 @@ export default function AdminMonthlyGrid() {
 
           <div className="grid grid-cols-7 border-b bg-white text-[11px] font-medium text-zinc-500">
             {DOW_DE.map((d) => (
-              <div key={d} className="px-2 py-2">{d}</div>
+              <div key={d} className="px-2 py-2">
+                {d}
+              </div>
             ))}
           </div>
 
           <div className="grid grid-cols-7">
             {monthSlots.slots.map((day, idx) => {
-              if (!day) {
-                return <div key={idx} className="h-[108px] border-r border-t bg-white last:border-r-0" />;
-              }
+              if (!day) return <div key={idx} className="h-[108px] border-r border-t bg-white last:border-r-0" />;
 
               const iso = isoDate(year, monthIndex, day);
               const entry = byISO.get(iso);
@@ -387,7 +387,9 @@ export default function AdminMonthlyGrid() {
 
                   <div className="mt-2 space-y-1 text-[11px] leading-tight text-zinc-800">
                     {tasks.slice(0, 2).map((t) => (
-                      <div key={t.key} className="truncate">{t.label}</div>
+                      <div key={t.key} className="truncate">
+                        {t.label}
+                      </div>
                     ))}
                     {tasks.length > 2 && <div className="text-zinc-600">+{tasks.length - 2}</div>}
 
@@ -435,10 +437,7 @@ export default function AdminMonthlyGrid() {
                 <div className="text-sm text-zinc-500">Bearbeite Tag</div>
                 <div className="text-lg font-semibold">{openISO}</div>
               </div>
-              <button
-                onClick={closeEditor}
-                className="rounded-lg border bg-white px-3 py-2 text-sm shadow-sm hover:bg-zinc-50"
-              >
+              <button onClick={closeEditor} className="rounded-lg border bg-white px-3 py-2 text-sm shadow-sm hover:bg-zinc-50">
                 Schliessen
               </button>
             </div>
@@ -453,7 +452,9 @@ export default function AdminMonthlyGrid() {
                     onChange={(e) => setEditZodiac(e.target.value as Zodiac)}
                   >
                     {ZODIACS.map((z) => (
-                      <option key={z} value={z}>{z}</option>
+                      <option key={z} value={z}>
+                        {z}
+                      </option>
                     ))}
                   </select>
                   {editZodiac === "FISCHE" && (
@@ -465,13 +466,18 @@ export default function AdminMonthlyGrid() {
 
                 <div className="space-y-1">
                   <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Mondphase</div>
+
+                  {/* ✅ FIX: OTHER als Option anbieten, sonst ist value="OTHER" ungültig */}
                   <select
                     className="w-full rounded-lg border bg-white px-3 py-2 text-sm shadow-sm"
                     value={editPhase}
                     onChange={(e) => setEditPhase(e.target.value as MoonPhase)}
                   >
+                    <option value="OTHER">— (keine)</option>
                     {PHASES.filter((p) => p !== "OTHER").map((p) => (
-                      <option key={p} value={p}>{MOON_PHASE_LABEL[p]}</option>
+                      <option key={p} value={p}>
+                        {MOON_PHASE_LABEL[p]}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -496,9 +502,7 @@ export default function AdminMonthlyGrid() {
                   </span>
 
                   {effectiveHnw(editZodiac) && (
-                    <span className="inline-flex items-center rounded-full border bg-white px-3 py-1 text-xs">
-                      Hnw
-                    </span>
+                    <span className="inline-flex items-center rounded-full border bg-white px-3 py-1 text-xs">Hnw</span>
                   )}
 
                   {editPhase !== "OTHER" && (
