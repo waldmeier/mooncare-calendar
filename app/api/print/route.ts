@@ -55,23 +55,25 @@ export async function GET(req: NextRequest) {
     // Falls du Fonts/Images nachlädst, kurz warten (optional)
     // await page.waitForTimeout(150);
 
-    const pdf = await page.pdf({
-      format: "A4",
-      printBackground: true,
-      preferCSSPageSize: true, // nutzt dein @page size/margins
-      // margins kommen aus @page – wenn du hier angibst, überschreibt es
-    });
+const pdf = await page.pdf({
+  format: "A4",
+  printBackground: true,
+  preferCSSPageSize: true,
+});
 
-    const filename = `SKEMA_Haar-Nagel-Pflanzenpflege_${year}.pdf`;
+const filename = `SKEMA_Haar-Nagel-Pflanzenpflege_${year}.pdf`;
 
-    return new Response(pdf, {
-      status: 200,
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `${download ? "attachment" : "inline"}; filename="${filename}"`,
-        "Cache-Control": "no-store",
-      },
-    });
+// Buffer -> Uint8Array (TS/Response BodyInit kompatibel)
+const body = pdf instanceof Uint8Array ? pdf : new Uint8Array(pdf);
+
+return new Response(body, {
+  status: 200,
+  headers: {
+    "Content-Type": "application/pdf",
+    "Content-Disposition": `inline; filename="${filename}"`,
+    "Cache-Control": "no-store",
+  },
+});
   } finally {
     await browser.close();
   }
