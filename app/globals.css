@@ -1,26 +1,259 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* SKEMA Brand Tokens */
+:root {
+  --skema-gold: #d4a61f;   /* warmes Gold */
+  --skema-black: #0b0b0c;  /* sehr dunkles Schwarz */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html, body {
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  background: #ffffff;
+}
+
+/* nicer focus */
+:focus-visible {
+  outline: 2px solid rgba(212, 166, 31, 0.55);
+  outline-offset: 2px;
+}
+/* ---------- A4 PRINT LAYOUT (Portrait) ---------- */
+@page {
+  size: A4 portrait;
+  margin: 10mm;
+}
+
+.print-a4 {
+  /* Screen preview */
+  background: white;
+  color: #111;
+  padding: 0;
+}
+
+/* Nur die Print-Seite soll A4-Styles bekommen */
+.print-a4 .print-header {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.print-a4 .brand {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.print-a4 .logo {
+  width: 44px;
+  height: 44px;
+  background-image: url(/skema-logo.png);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.print-a4 .brand-title {
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.print-a4 .brand-sub {
+  font-size: 10px;
+  color: #555;
+}
+
+.print-a4 .title {
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.print-a4 .title .year {
+  color: #9ca3af;
+  font-weight: 700;
+}
+
+.print-a4 .subtitle {
+  margin-top: 3px;
+  font-size: 10px;
+  color: #333;
+}
+
+.print-a4 .legend {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.print-a4 .legend-sep {
+  width: 1px;
+  height: 16px;
+  background: #111;
+  opacity: 0.3;
+  margin: 0 4px;
+}
+
+.print-a4 .chip {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  border: 1px solid #111;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 9px;
+  line-height: 1;
+}
+
+.print-a4 .chip .swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid #111;
+}
+
+/* Tailwind-Farben für Swatches (Fallback) */
+.print-a4 .bg-rose-200 { background: #fecdd3; }
+.print-a4 .bg-green-200 { background: #bbf7d0; }
+.print-a4 .bg-sky-200 { background: #bae6fd; }
+.print-a4 .bg-orange-200 { background: #fed7aa; }
+
+.print-a4 .print-rule {
+  margin: 8px 0 10px;
+  height: 1px;
+  background: #111;
+  opacity: 0.9;
+}
+
+/* 12 Monate auf A4: 3 Spalten x 4 Reihen */
+.print-a4 .months-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+/* Monat */
+.print-a4 .month {
+  border: 1px solid #111;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.print-a4 .month-head {
+  padding: 4px 6px;
+  border-bottom: 1px solid #111;
+  background: #fff;
+}
+
+.print-a4 .month-name {
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.print-a4 .month-table {
+  display: grid;
+  grid-auto-rows: 12px; /* wichtig für A4-Fit */
+}
+
+.print-a4 .row {
+  display: grid;
+  grid-template-columns: 22px 18px 1fr 14px;
+  border-top: 1px solid rgba(17,17,17,0.45);
+}
+
+.print-a4 .row:first-child { border-top: 0; }
+
+.print-a4 .cell {
+  padding: 0 4px;
+  font-size: 8px;
+  line-height: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.print-a4 .cell.task {
+  /* Task-Spalte darf etwas mehr zeigen, bleibt aber 1 Zeile */
+  letter-spacing: 0.1px;
+}
+
+.print-a4 .cell.moon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+/* Ton-Farben (wie Kalender) */
+.print-a4 .tone-rose { background: #fecdd3; }
+.print-a4 .tone-green { background: #bbf7d0; }
+.print-a4 .tone-sky { background: #bae6fd; }
+.print-a4 .tone-orange { background: #fed7aa; }
+.print-a4 .tone-white { background: #fff; }
+
+/* Mondpunkte */
+.print-a4 .moon {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid #111;
+  display: inline-block;
+}
+
+.print-a4 .moon.new {
+  background: #000;
+  border-color: #000;
+}
+
+.print-a4 .moon.full {
+  background: #d4a61f;
+  border-color: #111;
+}
+
+/* Halb/halb: links/rechts fest definiert */
+.print-a4 .moon.half {
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+}
+
+.print-a4 .moon.half::before,
+.print-a4 .moon.half::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 50%;
+}
+
+.print-a4 .moon.half::before { left: 0; }
+.print-a4 .moon.half::after { right: 0; }
+
+/* Zunehmend = gelb links, schwarz rechts */
+.print-a4 .moon.half.waxing::before { background: #d4a61f; }
+.print-a4 .moon.half.waxing::after { background: #000; }
+
+/* Abnehmend = schwarz links, gelb rechts */
+.print-a4 .moon.half.waning::before { background: #000; }
+.print-a4 .moon.half.waning::after { background: #d4a61f; }
+
+.print-a4 .print-foot {
+  margin-top: 8px;
+  font-size: 9px;
+  color: #333;
+}
+
+/* Beim Drucken: alles exakt, keine unnötigen UI-Elemente */
+@media print {
+  body { background: #fff !important; }
 }
